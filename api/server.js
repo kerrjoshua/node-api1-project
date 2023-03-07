@@ -70,7 +70,7 @@ server.delete('/api/users/:id', async (req, res) => {
         const id = req.params.id;
         const removedUser = await Users.remove(id)
         if (!removedUser) {
-            res.status(400).json({ message: 'The specified user does not exist'})
+            res.status(404).json({ message: 'The specified user does not exist'})
             return
         } else {
             res.status(200).json(removedUser)
