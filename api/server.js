@@ -7,11 +7,31 @@ server.get('/', (req,res) => {
     res.send('Hello World!!!')
 });
 
+
 server.use(express.json())
 
 // Add the code necessary in `index.js` and `api/server.js` to create a Web API and implement the following _endpoints_:
 
 // | POST   | /api/users     | Creates a user using the information sent inside the `request body`.   
+server.post('/api/users', async (req, res) => {
+    try {
+        const { name, bio } = req.body;
+        const user = {name:name, bio:bio};
+        if (!name || !bio) {
+            res.status(400).json({
+                message: 'Please provide name and bio for the user'
+            })
+            return
+        }
+        const createdUser = await Users.insert(user)
+        res.status(201).json({
+            message: 'success adding user',
+            data: createdUser
+        })
+    } catch (err) {
+        res.status(500).json({ message: `Error(jk): ${err.message}`})
+    }
+})
 
 
 // | GET    | /api/users     | Returns an array users.  
