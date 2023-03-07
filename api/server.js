@@ -24,12 +24,9 @@ server.post('/api/users', async (req, res) => {
             return
         }
         const createdUser = await Users.insert(user)
-        res.status(201).json({
-            message: 'success adding user',
-            data: createdUser
-        })
+        res.status(201).json(createdUser)
     } catch (err) {
-        res.status(500).json({ message: `Error(jk): ${err.message}`})
+        res.status(500).json({ message: `There was an error while saving the user to the database`})
     }
 })
 
@@ -46,9 +43,64 @@ server.get('/api/users', async (req, res) => {
     }
 })
 
-// | GET    | /api/users/:id | Returns the user object with the specified `id`.                                                       |
+// | GET    | /api/users/:id | Returns the user object with the specified `id`.   
+
+server.get('/api/users/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const foundUser = await Users.findById(id);
+        if (!foundUser) {
+            res.status(404).json({
+                message: 'The user with the specified id does not exist'
+            })
+        } else {
+            res.status(200).json(foundUser)
+        }
+
+    } catch(err) {
+        res.status(500).json({ message: `${err.message}: The user information could not be retrieved`})
+    }
+})
+
+
 // | DELETE | /api/users/:id | Removes the user with the specified `id` and returns the deleted user.                                 |
+
+server.delete('/api/users/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const removedUser = await Users.remove(id)
+        if (!removedUser) {
+            res.status(400).json({ message: 'The specified user does not exist'})
+            return
+        } else {
+            res.status(200).json(removedUser)
+        }
+    } catch(err) {
+        res.status(500).json({ message: 'The user could not be removed'})
+    }
+})
+
 // | PUT    | /api/users/:id | Updates the user with the specified `id` using data from the `request body`. Returns the modified user |
+
+server.put('/api/users/:id', async (req, res) => {
+    try {
+        const id =  req.params.id;
+        const { name, bio } = req.body;
+        if (!name || !bio ) {
+            res.status(400).json({ message: 'Please provide name and bio for the user' })
+            return
+        }
+        const updatedUser = await Users.update(id, { name, bio });
+        if (!updatedUser) {
+            res.status(404).json({ message: 'The user with the specified ID does not exist' })
+            return
+        } else {
+            res.status(200).json(updatedUser)
+        }
+    } catch(err) {
+        res.status(500).json({ message: `${err.message}: The user information could not be modified`})
+    } 
+})
 
 // #### User Schema
 
@@ -99,14 +151,7 @@ server.get('/api/users', async (req, res) => {
 
 // When the client makes a `GET` request to `/api/users/:id`:
 
-// - If the _user_ with the specified `id` is not found:
 
-//   - respond with HTTP status code `404` (Not Found).
-//   - return the following JSON object: `{ message: "The user with the specified ID does not exist" }`.
-
-// - If there's an error in retrieving the _user_ from the database:
-//   - respond with HTTP status code `500`.
-//   - return the following JSON object: `{ message: "The user information could not be retrieved" }`.
 
 // When the client makes a `DELETE` request to `/api/users/:id`:
 
